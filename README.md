@@ -49,7 +49,7 @@ The investigation used `CloudoraSignIn_CL` and `CloudoraAudit_CL`. The KQL analy
 
 ## Investigation findings and evidence
 
-All incident timestamps below are **UTC, August 2026**. Counts describe the query results shown in my screenshots. Apparent duplicate records are explained under [Data quality and count interpretation](#data-quality-and-count-interpretation).
+All incident timestamps below are **UTC, August 2026**. Counts describe the query results shown in my screenshots.
 
 ### 1. Reconstructing the CEO’s suspicious access
 
