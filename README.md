@@ -19,8 +19,7 @@ My objective was to connect the technical evidence to practical business decisio
 
 ## Incident report
 
-[Read the full incident report — CLD-IR-0001](report/Cloudora_CEO_Account_Takeover_Incident_Report.pdf)
-
+[Read the full incident report](report/Cloudora_CEO_Account_Takeover_Incident_Report.pdf)
 The report includes an executive summary, UTC timeline, findings, indicators, ATT&CK mapping, scope, response recommendations, and lessons learned.
 
 ## Key outcomes
