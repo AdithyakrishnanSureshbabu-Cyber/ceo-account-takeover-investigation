@@ -29,7 +29,7 @@ The report includes an executive summary, UTC timeline, findings, indicators, AT
 |---|---|---|
 | Daniel Reeve — CEO | Failed attempts followed by successful access, authenticator registration, and finance-mail concealment | Compromised |
 | Priya Nair | Successful access from identified attack infrastructure, followed by SharePoint Online sign-in | Second compromised account |
-| Omar Farah | Repeated successful Dubai activity consistent with his device/browser history | Likely legitimate travel; user confirmation would strengthen the assessment |
+| Omar Farah | Repeated successful Dubai activity consistent with his device/browser history | Legitimate travel; user confirmation would strengthen the assessment |
 | Wider target population | 26 distinct accounts received failed attempts from identified infrastructure | Campaign-wide review required |
 | Financial and reputational impact | Rule explicitly conceals finance/invoice correspondence | Credible fraud risk; actual loss and customer impact not established |
 
