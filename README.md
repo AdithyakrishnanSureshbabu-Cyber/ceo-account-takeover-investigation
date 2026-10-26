@@ -45,17 +45,6 @@ The supplied evidence establishes compromise and a credible fraud risk. It does 
 | Second compromised account | Priya’s successful sign-ins from campaign infrastructure | Response must include another identity and potential SharePoint exposure |
 | Likely legitimate travel | Omar’s Dubai activity is consistent with his successful-use history | Context helps avoid unnecessary disruption |
 
-## Skills demonstrated
-
-- **Azure Data Explorer:** Queried imported sign-in and audit records to investigate suspicious activity.
-- **KQL:** Used filtering, projection, aggregation, distinct-account counts, time bucketing, and chronological analysis.
-- **Microsoft Sentinel investigation concepts:** Practised KQL-based alert triage, baseline comparison, and incident scoping relevant to Sentinel. This investigation ran in Azure Data Explorer, not a live Sentinel workspace.
-- **Identity investigation:** Correlated authentication activity with unauthorised MFA and mailbox-rule changes.
-- **Incident scoping:** Distinguished compromised accounts from the wider target population.
-- **Evidence validation:** Recognised apparent duplicates and separated row counts from distinct accounts and event combinations.
-- **Incident reporting:** Connected technical findings to business risks, response priorities, and evidence limitations.
-- **MITRE ATT&CK mapping:** Mapped observed behaviour to relevant techniques.
-
 ## Investigation and evidence
 
 **All incident timestamps below are UTC, August 2026.**
@@ -255,18 +244,14 @@ The supplied historical logs do not establish specific messages read, documents 
 
 Further evidence requests would include mailbox access records, message trace, SharePoint file operations, payment records, and post-remediation telemetry.
 
-## Lessons learned
+## Skills demonstrated
 
-- **Scope beyond the initial alert.** Infrastructure-based analysis identified another compromised identity.
-- **Account changes determine remediation.** The authenticator registration and mail rule showed why password reset alone was insufficient.
-- **Context improves judgement.** Baseline comparison supported different assessments for Daniel’s and Omar’s unfamiliar-location activity.
-- **Validate counts before reporting scale.** Repeated records affected event totals without increasing distinct users.
-- **Business harm and recovery need evidence.** Potential impact and recommended actions must remain separate from verified outcomes.
+- **Azure Data Explorer:** Queried imported sign-in and audit records to investigate suspicious activity.
+- **KQL:** Used filtering, projection, aggregation, distinct-account counts, time bucketing, and chronological analysis.
+- **Microsoft Sentinel investigation concepts:** Practised KQL-based alert triage, baseline comparison, and incident scoping relevant to Sentinel. This investigation ran in Azure Data Explorer, not a live Sentinel workspace.
+- **Identity investigation:** Correlated authentication activity with unauthorised MFA and mailbox-rule changes.
+- **Incident scoping:** Distinguished compromised accounts from the wider target population.
+- **Evidence validation:** Recognised apparent duplicates and separated row counts from distinct accounts and event combinations.
+- **Incident reporting:** Connected technical findings to business risks, response priorities, and evidence limitations.
+- **MITRE ATT&CK mapping:** Mapped observed behaviour to relevant techniques.
 
-## Attribution
-
-The fictional scenario, synthetic datasets, report template, and query guidance were provided by the **MyFirstHack / myfirstcyberjob community**.
-
-The screenshots document my investigation run in Azure Data Explorer. This repository presents my analysis and reporting for learning and portfolio purposes, with queries developed or adapted using the supplied guidance.
-
-This project is not employment or a live client engagement. Original answer keys and another participant’s assessment are not included.
