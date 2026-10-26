@@ -1,59 +1,70 @@
 # Executive Account Takeover Investigation
 
-**SOC investigation | Identity compromise | Password spraying | Business email compromise risk**
+**SOC Analysis | KQL | Azure Data Explorer | Identity Security**
 
-Investigated a simulated executive account takeover using KQL to reconstruct suspicious access, identify a second compromised user, uncover unauthorised authentication and mailbox changes, and recommend a response focused on financial exposure and customer trust.
+Investigated a simulated CEO account takeover, identified a second compromised user, uncovered unauthorised MFA registration and finance-mail concealment, and documented response recommendations addressing potential payment fraud and business disruption.
 
-**26 distinct accounts targeted · 2 accounts compromised · 3 attack-source IPs**
+**26 accounts targeted · 2 accounts compromised · 3 attack-source IPs**
 
-[Read the incident report](Cloudora_CEO_Account_Takeover_Incident_Report.pdf) · [Review the evidence](#investigation-findings-and-evidence) · [Response recommendations](#recommended-response)
+[Read the incident report](Cloudora_CEO_Account_Takeover_Incident_Report.pdf) · [View investigation evidence](#investigation-and-evidence) · [Skills demonstrated](#skills-demonstrated)
 
-> **Simulation:** Cloudora is fictional and the supplied logs are synthetic. This project demonstrates investigation, analysis, and response planning. Live containment and recovery were not performed or verified.
-
-## Executive summary
-
-A suspicious early-morning sign-in against Cloudora’s CEO raised concerns shortly before an important enterprise deal. The investigation needed to answer both a technical and a business question: **was the executive identity compromised, and could that access expose the company to financial fraud or damage customer confidence?**
-
-I analysed sign-in and audit records in Azure Data Explorer, compared account baselines, traced a wider password-spraying pattern, and scoped successful access across the identified infrastructure.
-
-The investigation identified two compromised accounts. On the CEO’s account, an unauthorised authenticator registration was followed by an inbox rule that concealed finance and invoice-related messages. These changes created a credible opportunity for executive impersonation and payment diversion.
-
-The supplied evidence does not establish actual financial loss, fraudulent outbound messages, or data exfiltration. The response recommendations therefore address immediate access risk while identifying the additional evidence needed to assess business impact.
+> **Simulated investigation:** Cloudora is fictional and all supplied incident data is synthetic. This project demonstrates investigation and response planning. Live containment and recovery were not performed or verified.
 
 ## Project overview
 
 | Area | Details |
 |---|---|
 | Analyst | Adithyakrishnan Sureshbabu |
-| Scenario | Cloudora CEO account takeover — CLD-0001 |
-| Priority | P1, assigned by the training scenario |
+| Scenario | CEO account takeover — Cloudora |
+| Incident reference | CLD-0001 / CLD-IR-0001 |
+| Scenario priority | P1 — executive account compromise |
 | Incident period | 8–10 August 2026 |
 | Investigation platform | Azure Data Explorer |
 | Query language | Kusto Query Language — KQL |
-| Log sources | Synthetic Entra ID sign-in and audit records |
+| Evidence | Synthetic Entra ID sign-in and audit logs |
 | Deliverables | Incident report, investigation screenshots, and response recommendations |
 
-The investigation used `CloudoraSignIn_CL` and `CloudoraAudit_CL`. The KQL analysis skills are relevant to Microsoft Sentinel investigations; production schemas and detection configuration require adaptation.
+## Executive summary
 
-## Results at a glance
+Cloudora was approaching an important enterprise deal when its IT administrator reported suspicious early-morning access to the CEO’s account. The investigation needed to establish whether the account was compromised, identify other affected users, and assess the potential consequences for payments, confidential correspondence, and customer trust.
 
-| Investigation question | Result |
-|---|---|
-| Was the CEO’s account compromised? | Correlated sign-in and audit evidence supports compromise |
-| Was the activity isolated? | No — 26 distinct accounts were targeted across three nights |
-| Was another account accessed? | Yes — Priya Nair’s account |
-| What changed after CEO access? | Pixel 6 authenticator registration and RSS Subscriptions inbox rule |
-| Was every unfamiliar location malicious? | No — Omar Farah’s Dubai activity was assessed as likely legitimate travel |
-| Was business harm confirmed? | Fraud and disclosure remain potential consequences requiring further evidence |
-| Was recovery verified? | No — response actions were documented as recommendations |
+Using KQL, I reconstructed the sign-in sequence, compared account histories, examined audit changes, and expanded the investigation across the identified infrastructure. The evidence supported compromise of **Daniel Reeve’s and Priya Nair’s accounts**, within a campaign targeting **26 distinct users**.
 
-## Investigation findings and evidence
+On the CEO’s account, attacker-associated activity registered an authenticator method named **Pixel 6** and created **RSS Subscriptions**, an inbox rule that concealed finance and invoice-related messages. These findings made identity remediation and independent payment verification immediate response priorities.
 
-All incident timestamps below are **UTC, August 2026**. Counts describe the query results shown in my screenshots.
+The supplied evidence establishes compromise and a credible fraud risk. It does not establish actual financial loss, fraudulent outbound messages, or data exfiltration.
 
-### 1. Reconstructing the CEO’s suspicious access
+## Key findings
 
-Daniel Reeve’s account recorded failed attempts from `102.89.44.17` at **03:09:12** and **03:10:41**, followed by:
+| Finding | Evidence | Why it matters |
+|---|---|---|
+| CEO account compromised | Failed attempts followed by successful access and unauthorised account changes | Executive identity and mailbox require immediate response |
+| Wider credential attack | Failures against 26 accounts from three IPs over three nights | Scope extends beyond the original alert |
+| Unauthorised MFA method | Pixel 6 authenticator registered after successful access | Password reset alone leaves an unauthorised method configured |
+| Finance-mail concealment | Rule moves finance/invoice messages out of the inbox and marks them read | Could conceal payment discussions or warnings |
+| Second compromised account | Priya’s successful sign-ins from campaign infrastructure | Response must include another identity and potential SharePoint exposure |
+| Likely legitimate travel | Omar’s Dubai activity is consistent with his successful-use history | Context helps avoid unnecessary disruption |
+
+## Skills demonstrated
+
+- **Azure Data Explorer:** Queried imported sign-in and audit records to investigate suspicious activity.
+- **KQL:** Used filtering, projection, aggregation, distinct-account counts, time bucketing, and chronological analysis.
+- **Microsoft Sentinel investigation concepts:** Practised KQL-based alert triage, baseline comparison, and incident scoping relevant to Sentinel. This investigation ran in Azure Data Explorer, not a live Sentinel workspace.
+- **Identity investigation:** Correlated authentication activity with unauthorised MFA and mailbox-rule changes.
+- **Incident scoping:** Distinguished compromised accounts from the wider target population.
+- **Evidence validation:** Recognised apparent duplicates and separated row counts from distinct accounts and event combinations.
+- **Incident reporting:** Connected technical findings to business risks, response priorities, and evidence limitations.
+- **MITRE ATT&CK mapping:** Mapped observed behaviour to relevant techniques.
+
+## Investigation and evidence
+
+**All incident timestamps below are UTC, August 2026.**
+
+Counts reflect my query results. Apparent duplicate records are explained in the [Data quality](#data-quality) section.
+
+### 1. Reconstruct the CEO’s suspicious access
+
+Daniel’s account recorded failed attempts from `102.89.44.17` at **03:09:12** and **03:10:41**, followed by:
 
 | Time, UTC | Successful sign-in |
 |---|---|
@@ -61,112 +72,102 @@ Daniel Reeve’s account recorded failed attempts from `102.89.44.17` at **03:09
 | 03:14:30 | Outlook Web |
 | 03:26:02 | Azure Portal |
 
-This sequence established the activity requiring investigation. The subsequent authentication-method and inbox-rule changes strengthened the compromise assessment.
+I examined the sequence rather than treating unfamiliar geography as proof of compromise. The subsequent unauthorised account changes strengthened the assessment.
 
-**Analyst decision:** Treat the sign-in as part of a correlated sequence rather than concluding compromise from geography alone.
+![CEO sign-in timeline showing failures followed by successful access](screenshots/01-triage-ceo-signins.png)
 
-![CEO sign-in triage showing failures followed by successful access](screenshots/01-triage-ceo-signins.png)
-
-### 2. Establishing Daniel’s location baseline
+### 2. Compare activity with Daniel’s baseline
 
 The baseline query returned **78 London sign-in rows**:
 
 - **76 rows** from `203.0.113.13`.
 - **2 rows** from `203.0.113.11`.
 
-The account also recorded a London sign-in at **08:41:00** on 10 August.
+A London sign-in also occurred at **08:41:00** on the incident day.
 
-I assessed this history alongside the authentication sequence and unauthorised account changes. A later London sign-in alone does not conclusively exclude travel or VPN use.
-
-**Analyst decision:** Use the baseline to support judgement, with the audit changes providing stronger evidence of misuse.
+I assessed the location history alongside the failure sequence, device/browser context, and account changes. The later London sign-in alone does not conclusively exclude VPN use.
 
 ![Daniel Reeve location baseline](screenshots/02-daniel-baseline.png)
 
-### 3. Identifying the wider credential attack
+### 3. Identify the wider password-spraying pattern
 
 Grouping failed sign-ins by source IP and distinct account revealed three sources targeting overlapping user populations.
 
-| Source IP | Failed-sign-in rows | Distinct targeted accounts |
+| Source IP | Failure rows | Distinct targeted accounts |
 |---|---:|---:|
 | `102.89.44.17` | 96 | 23 |
 | `102.89.45.101` | 76 | 20 |
 | `102.89.44.23` | 56 | 18 |
 | **Combined** | **228** | **26 unique accounts** |
 
-The distinct-account counts overlap across IPs and cannot be added together.
+The account populations overlap across IP addresses, so their distinct counts cannot be added together.
 
-The many-account failure pattern is consistent with password spraying. The logs do not reveal attempted password values or conclusively establish how the successfully used credentials were obtained.
-
-**Analyst decision:** Expand the investigation from one executive account to the complete campaign target population.
+The many-account failure pattern is consistent with password spraying. Attempted password values are unavailable, so the exact credential-guessing method cannot be directly confirmed.
 
 ![Failed sign-ins grouped by source IP and distinct accounts](screenshots/04-spray-failures-by-ip.png)
 
-### 4. Establishing the campaign window
+### 4. Establish the campaign window
 
-Daily aggregation returned failures across three consecutive nights:
+Daily aggregation showed failures across three consecutive nights:
 
-| Date, UTC | Failed-sign-in rows |
+| Date, UTC | Failure rows |
 |---|---:|
 | 8 August | 88 |
 | 9 August | 72 |
 | 10 August | 68 |
 | **Total** | **228** |
 
-The query also returned **10 successful rows on 10 August**. The separate scope query grouped these into five distinct account/IP/timestamp combinations.
+The query also returned **10 successful rows on 10 August**. The separate scope query grouped successful results into five distinct account/IP/timestamp combinations.
 
-**Analyst decision:** Assess the activity as a multi-day campaign rather than focusing only on the morning of the CEO alert.
+This showed why the investigation needed to extend beyond the day of the reported compromise.
 
 ![Campaign activity grouped by UTC day](screenshots/05-spray-window-by-day.png)
 
-### 5. Identifying authentication persistence and finance-mail concealment
+### 5. Examine authentication and mailbox changes
 
-The audit query revealed two significant changes on Daniel’s account:
+The audit query revealed two changes on Daniel’s account:
 
-| Time, UTC | Audit activity | Security and business significance |
+| Time, UTC | Change | Response implication |
 |---|---|---|
-| 03:18:44 | Authenticator app added, device name `Pixel 6` | Unauthorised authentication configuration requires removal and verification |
-| 03:31:09 | Inbox rule `RSS Subscriptions` created | Finance/invoice correspondence could be hidden from the CEO |
+| 03:18:44 | Authenticator app added with device name `Pixel 6` | Remove the unauthorised method and verify legitimate methods |
+| 03:31:09 | Inbox rule `RSS Subscriptions` created | Preserve and remove the rule; review affected finance correspondence |
 
-The inbox rule matches messages from `finance@cloudora.io` or containing `invoice`, moves them to **RSS Feeds**, and marks them read.
+The rule matches messages from `finance@cloudora.io` or containing `invoice`, moves them to **RSS Feeds**, and marks them read.
 
-Each audit event appears twice in the screenshot. This does not establish two authenticator registrations or two separate rules.
+Each event appears twice in the screenshot. This does not establish two separate registrations or rules.
 
-**Analyst decision:** Recommend remediation beyond a password reset and involve finance in reviewing potentially concealed correspondence.
-
-**Business implication:** The rule could hide payment discussions or warnings, supporting a potential route to invoice fraud. Its creation does not prove that fraudulent messages or payments occurred.
+**Business implication:** Financial conversations or warnings could be hidden from the CEO, creating an opportunity for invoice fraud. The rule’s creation does not establish that fraudulent messages or payments occurred.
 
 ![Audit records showing authenticator registration and inbox-rule creation](screenshots/06-audit-persistence.png)
 
-### 6. Finding the second compromised account
+### 6. Scope successful access beyond the CEO
 
-Searching successful access from the identified infrastructure produced five distinct combinations:
+Searching identified infrastructure for successful sign-ins returned:
 
-| Account | Successful sign-in times, UTC |
-|---|---|
-| Daniel Reeve | 03:12:05, 03:14:30, 03:26:02 |
-| Priya Nair | 03:47:18, 03:52:40 |
+| Account | Distinct successful sign-in times, UTC | Source IP |
+|---|---|---|
+| Daniel Reeve | 03:12:05, 03:14:30, 03:26:02 | `102.89.44.17` |
+| Priya Nair | 03:47:18, 03:52:40 | `102.89.45.101` |
 
-Priya’s successful access came from `102.89.45.101`, one of the campaign sources.
+This identified **Priya as a second compromised user** and expanded the response scope.
 
-**Analyst decision:** Extend the affected-account scope and proposed response to Priya, rather than closing the investigation around the original CEO alert.
+![Successful sign-ins showing both affected accounts](screenshots/07-scope-successful-signins.png)
 
-![Successful sign-ins identifying both affected accounts](screenshots/07-scope-successful-signins.png)
+Priya’s baseline returned **66 London rows** from `203.0.113.10`. Her successful SharePoint Online sign-in creates a potential document-exposure concern; file-operation records are needed to establish which documents were accessed or downloaded.
 
-Priya’s baseline returned **66 London sign-in rows** from `203.0.113.10`. Her subsequent SharePoint Online sign-in creates a potential document-exposure concern, but file-operation evidence is needed to establish which documents were accessed or downloaded.
+No audit events target Priya in the supplied audit file. That limited absence does not prove her account had no unauthorised changes.
 
 ![Priya Nair location baseline](screenshots/09-priya-baseline.png)
 
-### 7. Defining the wider account-review population
+### 7. Inventory the complete target population
 
-The target inventory returned **26 distinct accounts**. Excluding the two compromised identities leaves **24 accounts with failures only from the identified infrastructure**.
+The campaign targeted **26 distinct accounts**. Excluding Daniel and Priya leaves **24 accounts with failures only from the identified infrastructure**.
 
-**Analyst decision:** Include those 24 accounts in further review and consider precautionary credential actions under the response policy.
+These accounts remain a review population. Failed attempts alone do not establish compromise, and the available evidence does not guarantee that they were unaffected elsewhere.
 
-“No successful access observed” is limited to the supplied evidence. It does not prove that an account was never compromised through other infrastructure or outside the recorded period.
+![Accounts targeted by the campaign](screenshots/08-spray-targeted-accounts.png)
 
-![Accounts targeted by the password-spraying campaign](screenshots/08-spray-targeted-accounts.png)
-
-### 8. Assessing a likely legitimate travel anomaly
+### 8. Assess a likely legitimate travel anomaly
 
 Omar Farah’s baseline returned:
 
@@ -174,38 +175,41 @@ Omar Farah’s baseline returned:
 |---|---:|
 | London | 76 |
 | Dubai | 24 |
-| Lagos, across three campaign IPs | 12 |
+| Lagos, across the three campaign IPs | 12 |
 
-Dubai activity came from `185.93.245.66` across 8–10 August. Supporting source records show successful activity using iOS 17 / Mobile Safari, a combination also present in his London history.
+Dubai activity came from `185.93.245.66` across 8–10 August. Supporting log records show successful activity using iOS 17 / Mobile Safari, also present in his London history.
 
-**Analyst decision:** Assess Dubai activity as likely legitimate travel, with user confirmation appropriate in a live investigation. Retain Omar in the campaign review because he was separately targeted by the identified infrastructure.
+I assessed this as **likely legitimate travel**, with user confirmation appropriate in a live investigation. Omar remained in the campaign review because the identified infrastructure separately targeted his account.
 
-![Omar Farah location baseline showing Dubai activity](screenshots/03-omar-baseline-travel.png)
+![Omar Farah baseline showing Dubai activity](screenshots/03-omar-baseline-travel.png)
 
 ## Business impact assessment
 
-| Business concern | Supporting evidence | Required follow-up |
+| Concern | Supporting evidence | Recommended follow-up |
 |---|---|---|
 | Payment diversion | Finance/invoice messages configured to be concealed | Independently verify suspicious payment requests and banking-detail changes |
-| Executive impersonation | Successful CEO identity and Outlook Web access | Review message trace and relevant mailbox audit evidence |
+| Executive impersonation | Successful CEO identity and Outlook Web access | Review message trace and relevant mailbox activity |
 | Sensitive information exposure | CEO mailbox and Priya’s SharePoint application access | Review message/file operations and permissions |
-| Customer confidence | Opportunity to misuse a trusted executive identity during a significant deal | Establish actual exposure before deciding external communications |
-| Operational disruption | Two identities require secure remediation | Arrange approved alternative communication while access is restricted |
+| Customer confidence | Opportunity to misuse an executive identity during an important deal | Establish actual exposure before deciding customer communication |
+| Operational disruption | Two identities require secure remediation | Arrange approved alternative communication during access restrictions |
 
-No monetary loss, lost deal, or confirmed reputational damage is claimed.
+**No financial loss, lost deal, or confirmed reputational damage is claimed.**
 
 ## Recommended response
 
 These are proposed actions, not verified tenant changes.
 
-1. **Interrupt access.** Preserve relevant evidence while promptly restricting sign-in and revoking sessions for both affected accounts.
-2. **Secure authentication.** Reset credentials, remove unauthorised methods, and verify legitimate authentication and recovery settings.
-3. **Restore mailbox integrity.** Preserve and remove the malicious rule; inspect forwarding, delegates, and other rules; review previously hidden messages.
-4. **Protect transactions.** Confirm suspicious payment instructions and banking-detail changes through known contact channels.
-5. **Investigate wider exposure.** Review targeted accounts and obtain mailbox and SharePoint activity evidence.
-6. **Verify recovery.** Check live configuration and fresh telemetry before restoring normal access and closing the incident.
+| Priority | Action | Purpose |
+|---|---|---|
+| Immediate | Preserve evidence while promptly restricting sign-in and revoking sessions for both affected accounts | Interrupt attacker access |
+| Immediate | Reset credentials and review authentication and recovery settings | Secure both identities |
+| Immediate | Remove the unauthorised authenticator method | Resolve the authentication change |
+| Immediate | Preserve and remove the inbox rule; inspect forwarding, delegates, and other rules | Restore mailbox integrity |
+| Immediate | Independently verify suspicious payment instructions | Reduce potential financial loss |
+| Follow-up | Review all targeted accounts and obtain mailbox and SharePoint activity records | Establish wider exposure |
+| Before closure | Verify live configuration and fresh telemetry | Demonstrate recovery and document residual risk |
 
-Restrictions on known IPs are an additional control because the attacker may change infrastructure.
+Known-IP restrictions are an additional measure because an attacker can change infrastructure. Previously hidden messages also require review; deleting the rule does not automatically restore them to the inbox.
 
 ## MITRE ATT&CK mapping
 
@@ -216,31 +220,53 @@ Restrictions on known IPs are an additional control because the attacker may cha
 | Persistence | T1098.005 — Device Registration | Unauthorised Pixel 6 authenticator registration |
 | Defense Evasion | T1564.008 — Email Hiding Rules | Finance/invoice messages moved out of the inbox and marked read |
 
-## Detection and monitoring opportunities
+## Data quality
 
-The findings support the following improvements:
+Repeated records are visible in the imported sign-in and audit results. The figures below describe rows returned by my queries.
 
-- Detect failed authentication across multiple distinct accounts, including campaigns distributed across IPs.
-- Correlate new authentication-method registration with suspicious recent access.
-- Monitor inbox rules that hide finance, invoice, or security messages.
-- Connect identity evidence with mailbox and SharePoint activity.
-- Validate ingestion quality before using event counts for alert thresholds or incident metrics.
+| Measure | Query result |
+|---|---:|
+| Campaign failure rows | 228 |
+| Successful campaign-associated rows | 10 |
+| Daniel’s London baseline rows | 78 |
+| Priya’s London baseline rows | 66 |
+| Omar’s Dubai activity rows | 24 |
+| Distinct targeted accounts | 26 |
+
+Apparent duplicates mean row counts should not be interpreted as unique authentication attempts.
+
+The successful-access scope query groups by account, IP address, and timestamp, returning **five distinct combinations across two compromised accounts**.
+
+## Detection improvements
+
+The findings support:
+
+- Password-spray monitoring across distinct users and multiple source IPs.
+- Correlation of authentication-method additions with suspicious recent access.
+- Monitoring of inbox rules that conceal finance, invoice, or security correspondence.
+- Investigation workflows connecting identity activity with mailbox and file operations.
+- Ingestion-quality checks before using counts for alert thresholds or incident metrics.
 
 These are proposed improvements. A deployed or production-validated detection rule is not claimed.
 
-## Skills demonstrated
-
-- **Azure Data Explorer:** Queried imported sign-in and audit logs to investigate suspicious account activity.
-- **Kusto Query Language (KQL):** Filtered events, grouped failures by source IP, counted distinct targeted accounts, and reconstructed timelines.
-- **Microsoft Sentinel investigation concepts:** Practised KQL-based analysis relevant to Sentinel, including alert triage, baseline comparison, and incident scoping. This project was performed in Azure Data Explorer, not a live Sentinel workspace.
-- **Identity investigation:** Correlated failed and successful sign-ins with authentication-method and mailbox-rule changes.
-- **Incident scoping:** Identified two compromised accounts and distinguished them from the wider targeted population.
-- **Evidence validation:** Recognised apparent duplicate records and separated row counts from distinct accounts and events.
-- **Incident reporting:** Documented findings, business risks, evidence limitations, and recommended containment actions.
-- **MITRE ATT&CK mapping:** Mapped observed behaviour to password spraying, valid accounts, device registration, and email hiding rules.
-
 ## Evidence limitations
 
-Historical sign-in and audit logs establish account activity and recorded configuration changes. They do not establish specific messages read, documents downloaded, fraudulent payments, customer impact, or successful recovery.
+The supplied historical logs do not establish specific messages read, documents downloaded, fraudulent payments, customer impact, or successful recovery.
 
 Further evidence requests would include mailbox access records, message trace, SharePoint file operations, payment records, and post-remediation telemetry.
+
+## Lessons learned
+
+- **Scope beyond the initial alert.** Infrastructure-based analysis identified another compromised identity.
+- **Account changes determine remediation.** The authenticator registration and mail rule showed why password reset alone was insufficient.
+- **Context improves judgement.** Baseline comparison supported different assessments for Daniel’s and Omar’s unfamiliar-location activity.
+- **Validate counts before reporting scale.** Repeated records affected event totals without increasing distinct users.
+- **Business harm and recovery need evidence.** Potential impact and recommended actions must remain separate from verified outcomes.
+
+## Attribution
+
+The fictional scenario, synthetic datasets, report template, and query guidance were provided by the **MyFirstHack / myfirstcyberjob community**.
+
+The screenshots document my investigation run in Azure Data Explorer. This repository presents my analysis and reporting for learning and portfolio purposes, with queries developed or adapted using the supplied guidance.
+
+This project is not employment or a live client engagement. Original answer keys and another participant’s assessment are not included.
